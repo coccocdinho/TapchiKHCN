@@ -1,0 +1,73 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+public partial class View_MasterPage : System.Web.UI.MasterPage
+{
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+            LoadData();
+            string text = "<li><a href=\"dangky.aspx\">Đăng ký</a></li><li><a href=\"dangnhap.aspx\">Đăng nhập</a></li>";
+            if (Session["UserId"] != null)
+            {
+                int userId = int.Parse(Session["UserId"].ToString());
+                using (var data = new DataClassesDataContext())
+                {
+                    User user = data.Users.SingleOrDefault(x => x.UserId == userId);
+                    text = "<li><a href=\"../logout.aspx\">Đăng xuất</a></li><li><a href=\"../UserProfile.aspx\" target=\"_blank\"><i>Chào "+user.PrefixName+" "+user.FullName+"</i></a></li>";
+                }
+            }
+            lblTextLogin.Text = text;
+        }
+    }
+
+    protected void LoadData()
+    {
+        using (var data = new DataClassesDataContext())
+        {
+            var listGroup = data.GroupTopics.Where(x => x.ParentId==0);
+            rptGroupTopic.DataSource = listGroup;
+            rptGroupTopic.DataBind();
+
+            var listTopic = (from st in data.ScientificTopics
+                            join au in data.Users on st.UserIdCreate equals au.UserId
+                            join g in data.GroupTopics on st.GroupTopicId equals g.GroupTopicId
+                            where st.ScientificTopicStatusIdId==Constants.ScientificTopicStatus_daxuatban
+                            &&g.GroupTopicStatus==true
+                            select new { 
+                                st.ScientificTopicId,
+                                au.FullName,
+                                st.ToTalView,
+                                st.Title,
+                                st.CreateDate
+                            }).ToList().OrderByDescending(x=>x.ToTalView).Take(5);
+            rptListTopic.DataSource = listTopic;
+            rptListTopic.DataBind();
+        }
+    }
+
+    protected void rptGroupTopic_ItemDataBound(object sender, RepeaterItemEventArgs e)
+    {
+        if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
+        {
+            HiddenField hdfGroupTopicId = e.Item.FindControl("hdfGroupTopicId") as HiddenField;
+            Repeater rptDetail = e.Item.FindControl("rptDetail") as Repeater;
+            int groupTopicId = int.Parse(hdfGroupTopicId.Value.ToString());
+            using (var data = new DataClassesDataContext())
+            {
+                var listChild = data.GroupTopics.Where(x => x.ParentId == groupTopicId && x.GroupTopicStatus == true);
+                rptDetail.DataSource = listChild;
+                rptDetail.DataBind();
+            }
+        }
+    }
+    protected void go_Click(object sender, EventArgs e)
+    {
+        Response.Redirect("timkiem.aspx?keyword="+txtKeySearch.Text);
+    }
+}

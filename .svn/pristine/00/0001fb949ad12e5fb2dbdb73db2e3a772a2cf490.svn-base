@@ -1,0 +1,46 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+public partial class View_thongtincanhan : System.Web.UI.Page
+{
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+            LoadData();
+        }
+    }
+
+    protected void LoadData()
+    {
+        try
+        {
+            int id = int.Parse(Request.QueryString["id"].ToString());
+            using (var data = new DataClassesDataContext())
+            {
+                var userEx = data.UserExtensions.SingleOrDefault(x => x.Id == id);
+                lblCompanyName.Text = userEx.CompanyName;
+                lblEmail.Text = userEx.Email;
+                lblMajoringInScience.Text = userEx.MajoringInScience;
+                lblPhone.Text = userEx.Phone;
+                lblPositionName.Text = userEx.PositionName;
+                lblPrifixName.Text = userEx.PrifixName;
+                lblFullName.Text = userEx.FullName;
+                lblPrifixName2.Text = userEx.PrifixName;
+                if (userEx.ImgFile != null)
+                {
+                    imgInfo.Src =".."+ userEx.ImgFile;
+                }
+            }
+        }
+        catch (Exception)
+        {
+            
+            throw;
+        }
+    }
+}

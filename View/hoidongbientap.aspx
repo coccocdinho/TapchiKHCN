@@ -1,0 +1,44 @@
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/View/MasterPage.master" AutoEventWireup="true" CodeFile="hoidongbientap.aspx.cs" Inherits="View_hoidongbientap" %>
+
+<asp:Content ID="Content1" ContentPlaceHolderID="head" Runat="Server">
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" Runat="Server">
+    <asp:Label runat="server" ID="lblContentNew" Text=""></asp:Label>
+                <br/>
+                <br/>
+				<h1 align="center">
+					<strong>HỘI ĐỒNG BIÊN TẬP</strong>
+				</h1>
+				<table summary="Summary Here" class="tbdisplay">
+					<thead>
+						<tr>
+							<th>STT</th>
+							<th>Họ và tên</th>
+							<th>Trách nhiệm</th>
+						</tr>
+					</thead>
+					<tbody>
+                        <asp:Repeater runat="server" ID="rptList">
+                            <ItemTemplate>
+                                <tr>
+							        <td><%#Container.ItemIndex +1%></td>
+							        <td><a href='thongtincanhan.aspx?id=<%# Eval("Id") %>'><%# Eval("PrifixName") %> <%# Eval("FullName") %></a></td>
+							        <td><%# Eval("PositionInScient") %></td>
+						        </tr>
+                            </ItemTemplate>
+                        </asp:Repeater>
+					</tbody>
+				</table>
+    <script>
+        $('.tbdisplay > tbody  > tr').each(function () {
+            var index = $(".tbdisplay tr").index(this);
+            if (index % 2 == 0) {
+                $(this).addClass("dark");
+            }
+            else {
+                $(this).addClass("light");
+            }
+        });
+    </script>
+</asp:Content>
+

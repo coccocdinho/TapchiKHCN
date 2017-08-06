@@ -1,0 +1,31 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+public partial class View_tinkhac : System.Web.UI.Page
+{
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+            LoadData();
+        }
+    }
+
+    protected void LoadData()
+    {
+        using (var obj = new DataClassesDataContext())
+        {
+            var list = (from u in obj.News.Where(x => x.GroupNewId == Constants.GroupNew_tinkhac && x.Publish==true)
+                        select u
+                        ).OrderByDescending(x => x.CreateDate).ToList();
+            pager.DataSource = list;
+            pager.BindToControl = rptList;
+            rptList.DataSource = pager.DataSourcePaged;
+            rptList.DataBind();
+        }
+    }
+}

@@ -1,0 +1,39 @@
+﻿
+/// <summary>
+/// 
+/// </summary>
+using System;
+public static class Constants
+{
+    public const int PasswordDerivationIteration = 1000,
+                     PasswordBytesLength = 64,
+                     MinPasswordLength = 8,
+                     PasswordSaltLength = 16,
+                     ActivationCodeLength = 32;
+    public const string Message_SystemError = "Hệ thống xảy ra lỗi. Hãy liên hệ với quản trị";
+    public const int RoleAdmin = 1;
+    public const int RoleTacgia = 2;
+    public const int RoleVanPhongToaSoan = 4;
+    public const int RoleTongBienTap = 5;
+    public const int RolePhanBien = 6;
+    public const int RoleTruongBanBienTapChuyenSan = 7;
+
+    public const int UserStatusDaDuyet = 2;
+    public const int UserStatus_DaKhoa = 3;
+    public const int UserStatus_ChoDuyet = 1;
+
+    public const int GroupNew_gioithieu = 1;
+    public const int GroupNew_thelebaigui = 2;
+    public const int GroupNew_luachonphanbien = 3;
+    public const int GroupNew_tintucn = 4;
+    public const int GroupNew_loinoidau = 5;
+    public const int GroupNew_cocautochuc = 6;
+    public const int GroupNew_tinhoatdong = 8;
+    public const int GroupNew_tinkhac = 9;
+    public const int GroupNew_hoidongbientap = 10;
+    public const int GroupNew_banbientapchuyensan = 11;
+
+    public const int ScientificTopicStatus_daxuatban = 9;
+    public const int ScientificTopicStatus_choxuatban = 7;
+    public const int ScientificTopicStatus_khongduyet = 3;
+}

@@ -1,0 +1,390 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Transactions;
+
+public partial class ScientificTopicProcessPage : AuthenticatePage
+{
+    int cKeyId = 0;
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+            Common.LoadChuyenSanToDropdownlist(ddlChuyenSan);
+            LoadListPhanBien();
+            InitData();
+            LoadStatus();
+            if (RoleId == Constants.RoleTacgia)
+            {
+                pnlUpfile.Visible = true;
+            }
+            if (RoleId == Constants.RoleTongBienTap)
+            {
+                pnlListPhanBien.Visible = true;
+            }
+            hfRole.Value = RoleId.ToString();
+        }
+    }
+
+    protected void InitData()
+    {
+        try
+        {
+            ViewState["ScientificTopicId"] = Request.QueryString["KeyId"].ToString();
+            cKeyId = int.Parse(ViewState["ScientificTopicId"].ToString());
+            UCTopicProcess1.TopicId = cKeyId;
+        }
+        catch (Exception)
+        {
+            cKeyId = 0;
+            ViewState["ScientificTopicId"] = "0";
+        }
+
+        if (cKeyId > 0)
+        {
+            using (var data = new DataClassesDataContext())
+            {
+                ScientificTopic topic = data.ScientificTopics.SingleOrDefault(x => x.ScientificTopicId == cKeyId);
+                if (topic == null) return;
+                Common.LoadGroupToDropdownlistByChuyenSan(ddlGroup, Convert.ToInt32(topic.ChuyensanId), topic);
+                Common.LoadUserByRoleToDropdownList(ddlListPhanBien, Constants.RolePhanBien, Convert.ToInt32(topic.ChuyensanId));
+                txtTitle.Text = topic.Title;
+                txtTitleEn.Text = topic.TitleEn;
+                txtShortDescription.Text = topic.ShortDesciption;
+                txtShortDescriptionEn.Text = topic.ShortDesciptionEn;
+                txtPositon.Text = topic.Posittion;
+                txtNumber.Text = topic.NumberPage.ToString();
+                // Phần lấy link file
+                // Exam : /File/201512135938HuongDanSuDungProfilerCuaSQLServer.docx
+                hplUrlFile.NavigateUrl = "~" + topic.FilePath;
+                hplUrlFile.Text = topic.FilePath.Replace("/File/", "");
+                hplUrlCommentFile.NavigateUrl = "~" + topic.CommentFilePath;
+                hplUrlCommentFile.Text = topic.CommentFilePath.Replace("/File/", "");
+                txtMetaKeyword.Text = topic.MetaKeyword;
+                txtMetaKeywordEn.Text = topic.MetaKeywordEn;
+
+                var author = data.Users.SingleOrDefault(x => x.UserId == topic.UserIdCreate);
+                txtAuthorName.Text = author.FullName;
+                txtSameAuthorName.Text = topic.SameAuthorName;
+                txtSameAuthorAddress.Text = topic.SameAuthorAddress;
+                // Kết thúc phần lấy link
+                txtPositon.Text = topic.Posittion;
+                //rdpCreateDate.SelectedDate = topic.CreateDate;
+                ddlGroup.SelectedValue = topic.GroupTopicId.ToString();
+                ddlChuyenSan.SelectedValue = topic.ChuyensanId.ToString();
+
+                if (topic.TopicCode.Length == 0)
+                {
+                    if (topic.ChuyensanId > 0)
+                    {
+                        ChuyenSan cs = data.ChuyenSans.SingleOrDefault(x => x.Id == topic.ChuyensanId);
+                        txtTopicCode.Text = cs.Code + topic.ScientificTopicId.ToString();
+                    }
+                }
+                else
+                {
+                    txtTopicCode.Text = topic.TopicCode;
+                }
+                txtAppointmentDate.Text = topic.AppointmentDate.ToString("dd/MM/yyyy");
+
+                if (topic.ListUserPhanBien.Length > 0)
+                {
+                    string sListUserPhanBien = topic.ListUserPhanBien.Remove(0,1);
+                    var list = sListUserPhanBien.Split(',');
+                    for (int i = 0; i < chkPhanBien.Items.Count; i++)
+                    {
+                        foreach (var item in list)
+                        {
+                            if (chkPhanBien.Items[i].Value == item)
+                            {
+                                chkPhanBien.Items[i].Selected = true;
+                            }
+                        }
+                    }
+                    List<int> listIdRemove = new List<int>();
+                    for (int i = 0; i < chkPhanBien.Items.Count; i++)
+                    {
+                        if (chkPhanBien.Items[i].Selected == false)
+                        {
+                            listIdRemove.Add(i);
+                        }
+                    }
+
+                    for (int i = listIdRemove.Count - 1; i >= 0; i--)
+                    {
+                        chkPhanBien.Items.RemoveAt(listIdRemove[i]);
+                    }
+                }
+
+                ScientificTopicStatus status = data.ScientificTopicStatus.SingleOrDefault(x => x.ScientificTopicStatusId == topic.ScientificTopicStatusIdId);
+                if (status.IsReadOnly)
+                {
+                    btnSave.Enabled = false;
+                }
+                ddlChuyenSan.Enabled = status.IsUpdateJournal;
+                ddlGroup.Enabled = status.IsUpdateGroup;
+                txtAppointmentDate.Enabled = status.IsUpdateAppointmentDate;
+                if (!status.IsUpdateReviewer)
+                {
+                    chkPhanBien.Visible = false;
+                }
+                pnlChonChuyenSan.Visible = status.IsViewpnlChonChuyenSan;
+                pnlGroupTopic.Visible = status.IsViewpnlGroupTopic;
+                pnlTopicCode.Visible = status.IsViewpnlTopicCode;
+                pnlPositon.Visible = status.IsViewpnlPositon;
+                pnlNumber.Visible = status.IsViewpnlNumber;
+                pnlChonPhanBien.Visible = status.IsViewpnlChonPhanBien;
+                pnlAppointmentDate.Visible = status.IsViewpnlAppointmentDate;
+                pnlViewCommentFile.Visible = status.IsViewCommentFile;
+                pnlUpdateCommentFile.Visible = status.IsUpdateCommentFile;
+
+                // Nếu là Phản biện thì ẩn thông tin tác giả đi
+                if (RoleId == Constants.RolePhanBien)
+                {
+                    pnlAuthorInfo.Visible = false;
+                }
+            }
+        }
+    }
+
+    protected void LoadListPhanBien()
+    {
+        using (var data = new DataClassesDataContext())
+        {
+            var listUsers = data.Users.Where(x => x.RoleId == 6).ToList();
+            foreach (var item in listUsers)
+            {
+                chkPhanBien.Items.Add(new ListItem(item.FullName+"("+item.UserName+")", item.UserId.ToString()));
+            }
+        }
+    }
+
+    protected void LoadStatus()
+    {
+        cKeyId = int.Parse(ViewState["ScientificTopicId"].ToString());
+        using (var data = new DataClassesDataContext())
+        {
+            ScientificTopic topic = data.ScientificTopics.Single(x => x.ScientificTopicId == cKeyId);
+            var list = data.ScientificTopicStatusConfigs.Where(x => x.FromStatusId == topic.ScientificTopicStatusIdId).ToList();
+            foreach (var item in list)
+            {
+                rbtListStatus.Items.Add(new ListItem(item.ActionName, item.ConfigId.ToString()));
+            }
+        }
+    }
+
+    protected void btnUpFile_Click(object sender, EventArgs e)
+    {
+        UploadFile upload = new UploadFile();
+        string urlFile = string.Empty;
+        string result = string.Empty;
+        if (fulFile.HasFile)
+        {
+            result = upload.SaveFile(fulFile.PostedFile, fulFile, ref urlFile, "/File/");
+            if (result.Contains("Có lỗi"))
+            {
+                lblMessage.Text = "Có lỗi " + result;
+                return;
+            }
+        }
+        hplUrlFile.NavigateUrl = urlFile;
+        hplUrlFile.Text = result;
+        hfIsNewFile.Value = "1";
+    }
+
+    protected void btnSave_Click(object sender, EventArgs e)
+    {
+        string msg = string.Empty;
+        if (ddlGroup.Enabled)
+        {
+            if (ddlGroup.SelectedValue == "0")
+            {
+                ScriptManager.RegisterClientScriptBlock(btnSave, this.GetType(), "", "alert('Có lỗi: Bạn phải chọn một Tạp chí');", true);
+                return;
+            }
+        }
+
+        string listPhanBien = string.Empty;
+        string message = string.Empty;
+        int count = 0;
+        for (int i=0;i<chkPhanBien.Items.Count;i++)
+        {
+            if (chkPhanBien.Items[i].Selected)
+            {
+                count++;
+                listPhanBien += "," + chkPhanBien.Items[i].Value;
+            }
+        }
+
+        if (chkPhanBien.Visible)
+        {
+            if (RoleId == Constants.RoleTongBienTap)
+            {
+                if (hfPhanBienId.Value == "0") msg = "Bạn phải chọn 1 Phản biện";
+                listPhanBien = ","+ hfPhanBienId.Value;
+            }
+
+            if (RoleId == Constants.RoleTruongBanBienTapChuyenSan)
+            {
+                if (count > 3)
+                    msg = "Bạn chỉ được chọn 3 phản biện cho bài báo";
+                else if (count < 3)
+                    msg = "Bản phải chọn 3 phản biện cho bài báo";
+            }
+        }
+
+        if (msg.Length > 0)
+        {
+            ScriptManager.RegisterClientScriptBlock(btnSave, this.GetType(), "", "alert('Có lỗi: "+msg+"');", true);
+            return;
+        }
+
+        cKeyId = int.Parse(ViewState["ScientificTopicId"].ToString());
+
+        using (var tran = new TransactionScope())
+        {
+            using (var data = new DataClassesDataContext())
+            {
+                try
+                {
+                    int configId= int.Parse(rbtListStatus.SelectedValue);
+                    ScientificTopicStatusConfig config = data.ScientificTopicStatusConfigs.SingleOrDefault(x=>x.ConfigId==configId);
+                    if (config == null)
+                    {
+                        ScriptManager.RegisterClientScriptBlock(btnSave, this.GetType(), "", "alert('Bạn phải chọn trạng thái.');", true);
+                        return;
+                    }
+                    ScientificTopic topic = data.ScientificTopics.SingleOrDefault(x=>x.ScientificTopicId==cKeyId);
+                    if (topic == null)
+                    {
+                        ScriptManager.RegisterClientScriptBlock(btnSave, this.GetType(), "", "alert('Có lỗi xảy ra. #1.');", true);
+                        return;
+                    }
+
+                    var userId = Common.DivisionUserProcess(data, cKeyId, config.ToRoleId, int.Parse(ddlChuyenSan.SelectedValue), ref message);
+                    if (userId == 0)
+                    {
+                        ScriptManager.RegisterClientScriptBlock(btnSave, this.GetType(), "", "alert('Có lỗi: Không tìm ra người xử lý để chia');", true);
+                        lblMessage.Text = "Có lỗi không tìm ra người để chia.";
+                        return;
+                    }
+                    //Gửi mail nếu Role nhận là Phản biên
+
+                    if (config.ToRoleId == Constants.RolePhanBien)
+                    {
+                        User u = data.Users.SingleOrDefault(x => x.UserId == userId);
+                        SystemConfig system = data.SystemConfigs.FirstOrDefault();
+                        string mess = Common.SendMail(system.SmtpEmailAccount, system.SmtpEmailPassword, u.Email, "Tạp chí  Khoa học và Công nghệ - Đại học Thái Nguyên trân trọng kính mời thầy/cô đọc nhận xét bài báo",
+                            Common.GetContentMailToPhanbine(system, u, topic));
+                        if (mess.Length > 0)
+                        {
+                            ScriptManager.RegisterClientScriptBlock(btnSave, this.GetType(), "", "alert('Có lỗi.');", true);
+                            lblMessage.Text = "Có lỗi khi gửi mail cho Phản biên. "+mess;
+                            return;
+                        }
+
+                        ScientificTopicProcess processMail = new ScientificTopicProcess();
+                        processMail.ScientificTopicId = topic.ScientificTopicId;
+                        processMail.UserId = UserID;
+                        processMail.ProcessContent = "Gửi mail thành công tới địa chỉ " + u.Email;
+                        processMail.ProcessDate = DateTime.Now;
+                        data.ScientificTopicProcesses.InsertOnSubmit(processMail);
+                        data.SubmitChanges();
+                    }
+
+                    topic.Title = txtTitle.Text;
+                    topic.ShortDesciption = txtShortDescription.Text;
+                    topic.UserIdUpdate = UserID;
+                    topic.UpdateDate = DateTime.Now;
+                    topic.ScientificTopicStatusIdId = config.ToStatusId;
+                    if (ddlGroup.Enabled)
+                    {
+                        topic.GroupTopicId = int.Parse(ddlGroup.SelectedValue);
+                    }
+                    topic.Priority = 1;
+                    topic.CurrentUserId = userId;
+                    if (hfIsNewFile.Value == "1")
+                    {
+                        topic.FilePath = hplUrlFile.NavigateUrl;
+                    }
+                    if (hfIsNewCommentFile.Value == "1")
+                    {
+                        topic.CommentFilePath = hplUrlCommentFile.NavigateUrl;
+                    }
+                    topic.NumberPage = int.Parse(txtNumber.Text);
+                    if (ddlChuyenSan.Enabled)
+                    {
+                        topic.ChuyensanId = int.Parse(ddlChuyenSan.SelectedValue);
+                    }
+                    topic.Posittion = txtPositon.Text;
+                    if (chkPhanBien.Visible)
+                    {
+                        topic.ListUserPhanBien = listPhanBien;
+                    }
+                    topic.AppointmentDate = UtilitiesConvert.ConvertDateShowToDateTime(txtAppointmentDate.Text, ref message);
+                    topic.TopicCode = txtTopicCode.Text;
+
+                    data.SubmitChanges();
+
+                    ScientificTopicProcess process = new ScientificTopicProcess();
+                    process.ScientificTopicId = topic.ScientificTopicId;
+                    process.UserId = UserID;
+                    process.ProcessContent = "Trạng thái: " + rbtListStatus.SelectedItem.Text +", Nội dung: "+txtProcessContent.Text;
+                    process.ProcessDate = DateTime.Now;
+                    data.ScientificTopicProcesses.InsertOnSubmit(process);
+                    data.SubmitChanges(); 
+
+                    tran.Complete();
+                    ScriptManager.RegisterClientScriptBlock(btnSave, this.GetType(), "", "alert('Xử lý thành công.');$(function(){window.parent.Popup.ObjDetail.ClosePopup('reload');});", true);
+                    lblMessage.Text = "Bạn đã gửi bài thành công.";
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    ScriptManager.RegisterClientScriptBlock(btnSave, this.GetType(), "", "alert('Có lỗi khi gửi bài."+ex.Message+"');window.opener.location.reload(true);window.close();", true);
+                    lblMessage.Text = "Có lỗi khi gửi bài. Bạn vui lòng thử lại sau.";
+                    lblMessage.Style.Add("color", "red");
+                    return;
+                }
+            }
+        }
+
+    }
+    protected void ddlChuyenSan_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        var data = new DataClassesDataContext();
+        cKeyId = int.Parse(ViewState["ScientificTopicId"].ToString());
+        ScientificTopic topic = data.ScientificTopics.SingleOrDefault(x => x.ScientificTopicId == cKeyId);
+        int chuyensanId = int.Parse(ddlChuyenSan.SelectedValue);
+        if (chuyensanId > 0)
+        {
+            ChuyenSan cs = data.ChuyenSans.SingleOrDefault(x => x.Id == chuyensanId);
+            txtTopicCode.Text = cs.Code + topic.ScientificTopicId.ToString();
+        }
+        else
+        {
+            txtTopicCode.Text = topic.TopicCode;
+        }
+    }
+    protected void btnUpdateCommentFile_Click(object sender, EventArgs e)
+    {
+        UploadFile upload = new UploadFile();
+        string urlFile = string.Empty;
+        string result = string.Empty;
+        if (fulCommentfile.HasFile)
+        {
+            result = upload.SaveFile(fulCommentfile.PostedFile, fulCommentfile, ref urlFile, "/File/");
+            if (result.Contains("Có lỗi"))
+            {
+                lblMessage.Text = "Có lỗi " + result;
+                return;
+            }
+        }
+        hplUrlCommentFile.NavigateUrl = urlFile;
+        hplUrlCommentFile.Text = result;
+        hfIsNewCommentFile.Value = "1";
+    }
+}

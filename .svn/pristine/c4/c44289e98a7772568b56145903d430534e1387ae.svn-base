@@ -1,0 +1,2 @@
+SELECT ShipName,ShipPhone,ShipAddress,Note,NotePrint,ProductType_Id,Name,RealAmount,Amount,Customer_Id,OrderDate,Shipper_Id FROM dbo.tbl_Orders 
+LEFT JOIN dbo.tbl_Regionals ON dbo.fn_Regional_getParent_Id_Lv2(dbo.tbl_Orders.Regional_Id)=dbo.tbl_Regionals.Regional_Id

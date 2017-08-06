@@ -1,0 +1,151 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data.Entity.Infrastructure;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+public partial class View_dangky : System.Web.UI.Page
+{
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+            ResetForm();
+            LoadChucDanh();
+        }
+    }
+
+    public void ResetForm()
+    {
+        txtEmail.Text = "";
+        txtPassword.Text = "";
+        txtRePassword.Text = "";
+        txtUserName.Text = "";
+        lblMessage.Text = "";
+    }
+
+    public string CheckDataForm()
+    {
+        if (txtUserName.Text.Trim().Length > 50 || txtUserName.Text.Trim().Length < 6)
+        {
+            return "Tên đăng nhập phải >6 ký tự và < 50 ký tự";
+        }
+
+        if (txtEmail.Text.Trim().Length > 50 || txtEmail.Text.Trim().Length < 6)
+        {
+            return "Email phải >6 ký tự và < 50 ký tự";
+        }
+
+        if (txtPassword.Text.Trim().Length > 50 || txtPassword.Text.Trim().Length < 6)
+        {
+            return "Mật khẩu phải >6 ký tự và < 50 ký tự";
+        }
+
+        if (txtFullName.Text.Trim().Length > 50 || txtFullName.Text.Trim().Length < 6)
+        {
+            return "Họ tên phải >6 ký tự và < 50 ký tự";
+        }
+
+        if (txtPassword.Text != txtRePassword.Text)
+        {
+            return "Mật khẩu nhập lại không đúng.";
+        }
+
+        return "";
+    }
+
+    protected void btnAdd_Click(object sender, EventArgs e)
+    {
+        string result = string.Empty;
+        //Encryption encrypt = new Encryption();
+        result = CheckDataForm();
+        if (result.Length > 0)
+        {
+            lblMessage.Text = result;
+            lblMessage.Style.Add("color", "red");
+            return;
+        }
+
+        using (var data = new DataClassesDataContext())
+        {
+            try
+            {
+                var password = txtPassword.Text;
+                var rePassword = txtRePassword.Text;
+                if (password != rePassword)
+                {
+                    lblMessage.Text = "Mật khẩu bạn nhập lại chưa đúng";
+                    return;
+                }
+                var passwordRandomSalt = Utilities.GenerateRandomBytes(16);
+                var passwordHash = Utilities.GetInputPasswordHash(password, passwordRandomSalt);
+                User user = new User();
+                user.UserName = txtUserName.Text;
+                user.PassWord = "";
+                user.PasswordHash = passwordHash;
+                user.PasswordSalt = passwordRandomSalt;
+                user.Email = txtEmail.Text;
+                user.CreateDate = DateTime.Now;
+                user.UserStatusId = 1;
+                user.RoleId = byte.Parse(ddlGroupUser.SelectedValue);
+                user.FullName = txtFullName.Text;
+                user.GroupUserId = 1;
+                user.Phone = txtPhone.Text;
+                user.PrefixId = int.Parse(ddlChucDanh.SelectedValue);
+                user.PrefixName = ddlChucDanh.SelectedItem.Text;
+                user.Address = txtAddress.Text;
+
+                using (var obj = new DataClassesDataContext())
+                {
+                    var check = obj.Users.SingleOrDefault(x => x.UserName == user.UserName);
+                    if (check != null)
+                    {
+                        lblMessage.Text = "UserName đã tồn tại.";
+                        return;
+                    }
+
+                    try
+                    {
+                        obj.Users.InsertOnSubmit(user);
+                        obj.SubmitChanges();
+                        lblMessage.Text = "Cập nhật thành công.";
+                    }
+                    catch (Exception)
+                    {
+                        lblMessage.Text = "Có lỗi khi thêm mới Users";
+                        return;
+                    }
+
+                }
+
+                Session["UserId"] = user.UserId;
+                Session["UserName"] = user.UserName;
+                Session["RoleId"] = user.RoleId;
+                ScriptManager.RegisterClientScriptBlock(btnAdd, this.GetType(), "", "alert('Đăng ký thành công.');window.opener.location.reload(true);window.close();", true);
+                Response.Redirect("../UserProfile.aspx");
+            }
+            catch (DbUpdateException ex)
+            {
+                lblMessage.Text = "Có lỗi khi thêm mới tài khoản " + ex.ToString();
+                lblMessage.Style.Add("color", "red");
+                return;
+            }
+        }
+        lblMessage.Text = "Đăng ký tài khoản thành công.";
+        //encrypt = null;
+    }
+
+    protected void LoadChucDanh()
+    {
+        using (var data = new DataClassesDataContext())
+        {
+            var list = data.PrifixUers.ToList();
+            ddlChucDanh.DataSource = list;
+            ddlChucDanh.DataValueField = "Id";
+            ddlChucDanh.DataTextField = "Name";
+            ddlChucDanh.DataBind();
+        }
+    }
+}

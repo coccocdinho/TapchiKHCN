@@ -1,0 +1,71 @@
+﻿<%@ WebHandler Language="C#" Class="UpdateScientTopic" %>
+
+using System;
+using System.Web;
+using System.Linq;
+using System.Transactions;
+
+public class UpdateScientTopic : IHttpHandler
+{
+
+    public void ProcessRequest(HttpContext context)
+    {
+        context.Response.ContentType = "text/plain";
+        context.Response.Write(Process(context));
+    }
+
+    public string Process(HttpContext context)
+    {
+        string msg = string.Empty;
+        try
+        {
+            var data = new DataClassesDataContext();
+            int keyId = FormHelper.GetInt("KeyId");
+            var objProcessData = data.ScientificTopics.SingleOrDefault(x => x.ScientificTopicId == keyId);
+            long userId = Common.DivisionUserProcess(data,keyId, Constants.RoleVanPhongToaSoan, Convert.ToInt32(objProcessData.ChuyensanId), ref msg);
+            if (msg.Length > 0) return msg;
+            if (userId == 0)
+            {
+                return "Có lỗi: Không tìm ra người xử lý để chia";
+            }
+            
+            using (TransactionScope scope = new TransactionScope())
+            {
+                using (var obj = new DataClassesDataContext())
+                {
+                    var objProcess = obj.ScientificTopics.SingleOrDefault(x => x.ScientificTopicId == keyId);
+                    objProcess.ScientificTopicStatusIdId = Constants.ScientificTopicStatus_choxuatban;
+                    objProcess.CurrentUserId = userId;
+                    objProcess.GroupTopicId = 0;
+                    obj.SubmitChanges();
+
+                    ScientificTopicProcess process = new ScientificTopicProcess();
+                    process.ScientificTopicId = objProcess.ScientificTopicId;
+                    process.UserId = obj.Users.FirstOrDefault(x => x.RoleId == Constants.RoleTongBienTap).UserId;
+                    process.ProcessContent = "Bỏ khỏi tạp chí. Chuyển chưa phát hành";
+                    process.ProcessDate = DateTime.Now;
+
+                    obj.ScientificTopicProcesses.InsertOnSubmit(process);
+                    obj.SubmitChanges();
+
+                    scope.Complete();
+                    
+                    return "";
+                }
+            }
+        }
+        catch (Exception)
+        {
+            return "Có lỗi khi xử lý dữ liệu.";
+        }
+    }
+
+    public bool IsReusable
+    {
+        get
+        {
+            return false;
+        }
+    }
+
+}

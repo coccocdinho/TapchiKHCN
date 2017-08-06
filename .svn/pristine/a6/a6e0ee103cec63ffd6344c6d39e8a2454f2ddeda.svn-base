@@ -1,0 +1,119 @@
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/View/MasterPage.master" AutoEventWireup="true" CodeFile="dangky.aspx.cs" Inherits="View_dangky" %>
+
+<asp:Content ID="Content1" ContentPlaceHolderID="head" runat="Server">
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="Server">
+    <style type="text/css">
+        .auto-style1
+        {
+            width: 600px;
+            border:none;
+        }
+
+        .auto-style2
+        {
+            width: 136px;
+            border:none;
+        }
+
+        .auto-style3
+        {
+            width: 297px;
+            border:none;
+        }
+    </style>
+    <fieldset>
+        <legend>
+            <h3>Đăng ký thông tin người dùng </h3>
+        </legend>
+        <table class="auto-style1">
+            <tr>
+                <td class="auto-style2">Tài khoản</td>
+                <td class="auto-style3">
+                    <asp:TextBox ID="txtUserName" runat="server" MaxLength="50" Width="250px"></asp:TextBox>
+                </td>
+            </tr>
+            <tr>
+                <td class="auto-style2">Mật khẩu</td>
+                <td class="auto-style3">
+                    <asp:TextBox ID="txtPassword" runat="server" MaxLength="50" TextMode="Password" Width="250px"></asp:TextBox>
+                </td>
+            </tr>
+            <tr>
+                <td class="auto-style2">Nhập lại mật khẩu</td>
+                <td class="auto-style3">
+                    <asp:TextBox ID="txtRePassword" runat="server" MaxLength="50" TextMode="Password" Width="250px"></asp:TextBox>
+                </td>
+            </tr>
+            <tr>
+                <td class="auto-style2">Họ tên</td>
+                <td class="auto-style3">
+                    <asp:TextBox ID="txtFullName" runat="server" MaxLength="50" Width="250px"></asp:TextBox>
+                </td>
+            </tr>
+            <tr>
+                <td class="auto-style2">Địa chỉ</td>
+                <td class="auto-style3">
+                    <asp:TextBox ID="txtAddress" runat="server" MaxLength="50" Width="250px"></asp:TextBox>
+                </td>
+            </tr>
+            <tr>
+                <td class="auto-style2">Nhóm</td>
+                <td class="auto-style3">
+                    <asp:DropDownList ID="ddlGroupUser" runat="server" Width="200px">
+                        <asp:ListItem Value="2" Selected="True">Tác giả</asp:ListItem>
+                        <asp:ListItem Value="6">Phản biện</asp:ListItem>
+                    </asp:DropDownList>
+                </td>
+            </tr>
+            <tr>
+                <td class="auto-style2">Email</td>
+                <td class="auto-style3">
+                    <asp:TextBox ID="txtEmail" runat="server" MaxLength="50" Width="250px"></asp:TextBox>
+                </td>
+            </tr>
+            <tr>
+                <td class="auto-style2">Số điện thoại</td>
+                <td class="auto-style3">
+                    <asp:TextBox ID="txtPhone" runat="server" MaxLength="50" Width="250px"></asp:TextBox>
+                </td>
+            </tr>
+            <tr>
+                <td class="auto-style2">Học hàm</td>
+                <td class="auto-style3">
+                    <asp:TextBox ID="txtChucDanh" ClientIDMode="Static" runat="server" Width="200px"></asp:TextBox>
+                    <asp:DropDownList ClientIDMode="Static" ID="ddlChucDanh" runat="server" Width="200px">
+                    </asp:DropDownList>
+                </td>
+            </tr>
+            <tr>
+                <td class="auto-style2">&nbsp;</td>
+                <td class="auto-style3">
+                    <asp:Button ID="btnAdd" runat="server" Text="Đăng ký" ToolTip="Đăng ký" Width="100px" OnClick="btnAdd_Click" /></td>
+            </tr>
+        </table>
+
+        <asp:Label ID="lblMessage" runat="server"></asp:Label>
+    </fieldset>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            //We are binding onchange event using jQuery built-in change event
+            $('#ddlChucDanh').change(function () {
+                //get selected value and check if subject is selected else show alert box
+
+                var SelectedValue = $("#ddlChucDanh").val();
+                if (SelectedValue > 0) {
+                    //get selected text and set to label
+                    var SelectedText = $("#ddlChucDanh option:selected").text();
+                    $('#txtChucDanh').val(SelectedText);
+                } else {
+                    //reset label values and show alert
+                    lblSelectedText.innerHTML = "";
+                    lblSelectedValue.innerHTML = "";
+                    alert("Please select valid subject.");
+                }
+            });
+        });
+    </script>
+</asp:Content>
+

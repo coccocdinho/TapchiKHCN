@@ -1,0 +1,216 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="MasterPage.master.cs" Inherits="View_MasterPage" %>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tạp chí KHCN Đại Học Thái Nguyên</title>
+    <asp:ContentPlaceHolder ID="head" runat="server">
+    </asp:ContentPlaceHolder>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="css/layout.css" type="text/css" />
+    <link href="css/font-awesome.min.css" rel="stylesheet"></link>
+    <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script type="text/javascript" src="js/script.js"></script>
+</head>
+<body id="top">
+    <form id="form1" runat="server">
+        <div class="wrapper col1">
+            <div id="head">
+                <a href="home.aspx">
+                    <img
+                        src="images/bannertckhcn.png" height="110" width="100%" alt="" /></a>
+                <div id="search">
+                    <form action="#" method="post">
+                        <fieldset>
+                            <asp:Button runat="server" type="submit" name="go" id="go" Text="GO" value="GO" OnClick="go_Click" />
+                            <asp:TextBox runat="server" ID="txtKeySearch"
+                                type="text" placeholder="Tìm kiếm" />
+                        </fieldset>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="navigation">
+            <ul class="main-navigation">
+                <li class="active"><a
+                    href="home.aspx">Trang chủ</a></li>
+                <li class="dropdown"><a href="#">Giới thiệu</a>
+                    <ul>
+                        <li><a
+                            href="gioithieu.aspx">Lời
+							nói đầu</a></li>
+                        <li class="dropdown"><a href="#">Cơ cấu tổ chức</a>
+                            <ul>
+                                <li><a
+                                    href="hoidongbientap.aspx">Hội
+									đồng biên tập</a></li>
+                                <li><a
+                                    href="banbtchuyensan.aspx">Ban
+									biên tập chuyên san</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                <li class="dropdown"><a href="#">Tin tức</a>
+                    <ul>
+                        <li><a href="tinhoatdong.aspx">Tin
+							hoạt động</a></li>
+                        <li><a href="tinkhac.aspx">Tin
+							khác</a></li>
+                    </ul>
+                </li>
+                <li><a
+                    href="theleguibai.aspx">Thể
+					lệ gửi bài</a></li>
+                <li><a href="dangky.aspx">Đăng ký</a></li>
+                <li><a href="../login.aspx">Đăng nhập</a></li>
+                <li><a href="#">Lựa chọn phản biện</a></li>
+            </ul>
+        </div>
+        <div class="wrapper col4">
+            <div id="container">
+                <div id="content">
+                    <asp:ContentPlaceHolder ID="ContentPlaceHolder1" runat="server">
+                    </asp:ContentPlaceHolder>
+                </div>
+                <div id="column">
+                    <div id="columnds">
+                        <div class="dsxuatban">
+                            <h2>Đã xuất bản</h2>
+                            <ul id="accordion" class="accordion">
+                                <asp:Repeater runat="server" ID="rptGroupTopic" OnItemDataBound="rptGroupTopic_ItemDataBound">
+                                    <ItemTemplate>
+                                        <li>
+                                            <div class="link">
+                                                <%# Eval("Name") %><i class="fa fa-chevron-down"></i>
+                                                <asp:HiddenField runat="server" ID="hdfGroupTopicId" Value='<%# Eval("GroupTopicId") %>' />
+                                            </div>
+                                            <ul class="submenu">
+                                                <asp:Repeater runat="server" ID="rptDetail">
+                                                    <ItemTemplate>
+                                                        <li><a href='tapchi.aspx?gId=<%# Eval("GroupTopicId") %>'><%# Eval("Name") %></a></li>
+                                                    </ItemTemplate>
+                                                </asp:Repeater>
+                                            </ul>
+                                        </li>
+                                    </ItemTemplate>
+                                </asp:Repeater>
+                            </ul>
+                        </div>
+                    </div>
+                    <div id="featured">
+                        <ul>
+                            <li>
+                                <h2>Bài báo được xem nhiều nhất</h2>
+                                <asp:Repeater runat="server" ID="rptListTopic">
+                                    <ItemTemplate>
+                                        <p>
+                                            &#8727; <a class="abold" href='chitietbaibao.aspx?id=<%# Eval("ScientificTopicId") %>'><%# Eval("Title") %></a>
+                                            (<%# Eval("ToTalView") %> lần)<br />
+                                            <span class="tacgia">Tác giả:</span><span
+                                                class="tenTg"><%# Eval("FullName") %></span>
+                                        </p>
+                                    </ItemTemplate>
+                                </asp:Repeater>
+
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="clear"></div>
+            </div>
+        </div>
+        <div class="wrapper col5">
+            <div id="footer">
+                <div id="compdetails">
+                    <div id="officialdetails">
+                        <h2>Liên hệ</h2>
+                        <ul>
+                            <li><b>Tạp chí khoa học và Công nghệ Đại học Thái Nguyên</b></li>
+                            <li><b>Văn phòng:</b> Phòng 102 - Tòa nhà T1 - Văn phòng Đại
+							học Thái Nguyên</li>
+                            <li><b>Địa chỉ:</b> Phường Tân Thịnh - Thành phố Thái Nguyên
+							- Tỉnh Thái Nguyên</li>
+                            <li><b>Điện thoại:</b> 0208 3840 288</li>
+                            <li><b>E-mail:</b> tapchikhoahoccongnghe@tnu.edu.vn</li>
+                        </ul>
+                    </div>
+                    <div id="contactdetails">
+                        <h2>Liên kết</h2>
+                        <ul>
+			                <li><a href="http://tnu.edu.vn">Đại học Thái Nguyên</a></li>
+			                <li><a href="http://qlkh.tnu.edu.vn">Quản lý trực tuyến KH&amp;CN</a></li>
+			                <li><a href="http://tuyensinh.tnu.edu.vn">Tuyển sinh </a></li>
+			                <li><a href="http://dec.tnu.edu.vn">Đào tạo từ xa</a></li>
+			                <li><a href="http://lrc.tnu.edu.vn">Trung tâm học liệu</a></li>
+			                <li><a href="http://nxb.tnu.edu.vn">Nhà xuất bản</a></li>
+			                <li><a href="http://csdltc.tnu.edu.vn">CSDL bài báo</a></li>
+		                </ul>
+                    </div>
+                    <div class="clear"></div>
+                </div>
+
+                <!-- End Contact Form -->
+
+                <!-- End Company Details -->
+                <div id="copyright">
+                    <p class="fl_left">
+                        Copyright &copy; 2017 - All Rights Reserved - <a href="#">http://tapchikhcn.tnu.edu.vn</a>
+                    </p>
+                    <br class="clear" />
+                </div>
+                <div class="clear"></div>
+            </div>
+        </div>
+        <script>
+            $(function () {
+                var Accordion = function (el, multiple) {
+                    this.el = el || {};
+                    this.multiple = multiple || false;
+
+                    // Variables privadas
+                    var links = this.el.find('.link');
+                    // Evento
+                    links.on('click', {
+                        el: this.el,
+                        multiple: this.multiple
+                    }, this.dropdown)
+                }
+
+                Accordion.prototype.dropdown = function (e) {
+                    var $el = e.data.el;
+                    $this = $(this), $next = $this.next();
+
+                    $next.slideToggle();
+                    $this.parent().toggleClass('open');
+
+                    if (!e.data.multiple) {
+                        $el.find('.submenu').not($next).slideUp().parent()
+                                .removeClass('open');
+                    }
+                    ;
+                }
+
+                var accordion = new Accordion($('#accordion'), false);
+            });
+        </script>
+        <script type="text/javascript">
+            var _gaq = _gaq || [];
+            _gaq.push(['_setAccount', 'UA-36251023-1']);
+            _gaq.push(['_setDomainName', 'jqueryscript.net']);
+            _gaq.push(['_trackPageview']);
+
+            (function () {
+                var ga = document.createElement('script');
+                ga.type = 'text/javascript';
+                ga.async = true;
+                ga.src = ('https:' == document.location.protocol ? 'https://ssl'
+                        : 'http://www')
+                        + '.google-analytics.com/ga.js';
+                var s = document.getElementsByTagName('script')[0];
+                s.parentNode.insertBefore(ga, s);
+            })();
+        </script>
+    </form>
+</body>
+</html>

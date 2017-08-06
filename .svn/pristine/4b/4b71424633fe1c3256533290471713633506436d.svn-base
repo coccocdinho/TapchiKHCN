@@ -1,0 +1,24 @@
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/View/MasterPage.master" AutoEventWireup="true" CodeFile="Home.aspx.cs" Inherits="View_Home" %>
+
+<asp:Content ID="Content1" ContentPlaceHolderID="head" runat="Server">
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="Server">
+    <div id="main">
+        <asp:Repeater runat="server" ID="rptList">
+            <ItemTemplate>
+                <div class="listnews">
+                    <a href='chitiet.aspx?newId=<%# Eval("NewId") %>'>
+                        <img class="imgl" src='<%# ".."+Eval("Images") %>' alt="" /></a>
+                    <p class="headtitle">
+                        <a href='chitiet.aspx?newId=<%# Eval("NewId") %>'><%# Eval("Title") %></a>
+                    </p>
+                    <span class="date"><%# UtilityFormat.FormatDateToString(Convert.ToDateTime(Eval("CreateDate"))) %></span>
+                    <p>
+                        <%# Eval("ShortDescription") %>
+                    </p>
+                </div>
+            </ItemTemplate>
+        </asp:Repeater>
+    </div>
+</asp:Content>
+
