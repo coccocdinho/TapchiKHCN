@@ -109,6 +109,14 @@ public partial class NewEdit : AuthenticatePage
                     news.Title = txtTitle.Text;
                     news.ShortDescription = txtShortDescription.Text;
                     news.Content = radContent.Content;
+                    if (cbPublísh.Checked)
+                    {
+                        news.Publish = true;
+                    }
+                    else
+                    {
+                        news.Publish = false;
+                    }
                     if (!string.IsNullOrEmpty(urlImages))
                     {
                         news.Images = urlImages;

@@ -25,7 +25,7 @@
 							<td><strong><asp:Label runat="server" ID="lblPrifixName2"></asp:Label></strong></td>
 						</tr>
 						<tr>
-							<td width="35%">Chuyên nghành:</td>
+							<td width="35%">Chuyên ngành:</td>
 							<td><strong><asp:Label runat="server" ID="lblMajoringInScience"></asp:Label></strong></td>
 						</tr>
 						<tr>
